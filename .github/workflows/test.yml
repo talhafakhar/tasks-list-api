@@ -1,0 +1,84 @@
+name: Run PHPUnit Tests
+
+on:
+  push:
+    branches: [ '*' ]
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mailhog:
+        image: mailhog/mailhog
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_pgsql
+          tools: composer, phpunit
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate Key
+        run: php artisan key:generate
+
+      - name: Configure Environment
+        run: |
+          echo "DB_CONNECTION=pgsql" >> .env
+          echo "DB_HOST=localhost" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_DATABASE=testdb" >> .env
+          echo "DB_USERNAME=postgres" >> .env
+          echo "DB_PASSWORD=postgres" >> .env
+          echo "REDIS_HOST=localhost" >> .env
+          echo "REDIS_PASSWORD=null" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "MAIL_MAILER=smtp" >> .env
+          echo "MAIL_HOST=localhost" >> .env
+          echo "MAIL_PORT=1025" >> .env
+          echo "MAIL_USERNAME=null" >> .env
+          echo "MAIL_PASSWORD=null" >> .env
+          echo "MAIL_ENCRYPTION=null" >> .env
+
+      - name: Run Migrations
+        run: php artisan migrate
+
+      - name: Run Tests
+        run: phpunit

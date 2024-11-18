@@ -15,6 +15,7 @@ return new class extends Migration {
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->unique();
             $table->foreignId('task_list_id')->constrained('task_lists');
             $table->text('description');
             $table->string('status');
