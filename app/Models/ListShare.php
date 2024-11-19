@@ -8,12 +8,13 @@
 
 namespace App\Models;
 
+use App\Enums\ListSharePermission;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ListShare extends Model
+class ListShare extends Pivot
 {
     use HasFactory, HasUuid;
 
@@ -25,5 +26,12 @@ class ListShare extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'permission_type' => ListSharePermission::class,
+        ];
     }
 }

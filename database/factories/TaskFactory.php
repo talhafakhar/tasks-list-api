@@ -8,6 +8,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\TaskList;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,8 +21,8 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'description' => $this->faker->text(),//
-            'status' => $this->faker->word(),
+            'description' => $this->faker->text(),
+            'status' => $this->faker->randomElement(TaskStatus::cases()),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

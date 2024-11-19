@@ -7,6 +7,9 @@
  */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ListShareController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskListController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -30,23 +33,30 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
      * <h3>Task List Routes<h3>
      */
     Route::prefix('task-lists')->group(function () {
-        Route::get('', 'App\Http\Controllers\TaskListController@index');
-        Route::post('', 'App\Http\Controllers\TaskListController@store');
-        Route::get('{taskList}', 'App\Http\Controllers\TaskListController@show');
-        Route::put('{taskList}', 'App\Http\Controllers\TaskListController@update');
-        Route::delete('{taskList}', 'App\Http\Controllers\TaskListController@destroy');
-        Route::post('{taskList}/share', 'App\Http\Controllers\ListShareController@store');
-        Route::get('{taskList}/shared', 'App\Http\Controllers\ListShareController@index');
+        Route::get('', [TaskListController::class, 'index']);
+        Route::post('', [TaskListController::class, 'store']);
+        Route::get('{taskList}', [TaskListController::class, 'show']);
+        Route::put('{taskList}', [TaskListController::class, 'update']);
+        Route::delete('{taskList}', [TaskListController::class, 'destroy']);
+
+        /**
+         * <h3>Task List Sharing Routes<h3>
+         */
+        Route::get('check-username/{username}', [TaskListController::class, 'checkUsername']);
+        Route::post('{taskList}/share', [ListShareController::class, 'share']);
+        Route::post('{taskList}/un-share', [ListShareController::class, 'unShare']);
+        Route::put('{taskList}/update-permission', [ListShareController::class, 'update']);
+        Route::get('{taskList}/shared-with', [ListShareController::class, 'shared']);
 
         /**
          * <h3>Tasks Routes<h3>
          */
         Route::prefix('{taskList}/tasks')->group(function () {
-            Route::get('', 'App\Http\Controllers\TaskController@index');
-            Route::post('', 'App\Http\Controllers\TaskController@store');
-            Route::get('{task}', 'App\Http\Controllers\TaskController@show');
-            Route::put('{task}', 'App\Http\Controllers\TaskController@update');
-            Route::delete('{task}', 'App\Http\Controllers\TaskController@destroy');
+            Route::get('', [TaskController::class, 'index']);
+            Route::post('', [TaskController::class, 'store']);
+            Route::get('{task}', [TaskController::class, 'show']);
+            Route::put('{task}', [TaskController::class, 'update']);
+            Route::delete('{task}', [TaskController::class, 'destroy']);
         });
     });
 });

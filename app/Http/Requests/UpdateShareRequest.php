@@ -12,14 +12,16 @@ use App\Enums\ListSharePermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
-class ListShareRequest extends FormRequest
+class UpdateShareRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'permission' => ['required', new Enum(ListSharePermission::class)],
-            'users' => ['required', 'array'],
-            'users.*' => ['exists:users,uuid'],
+            'permission' => [
+                'required',
+                new Enum(ListSharePermission::class)
+            ],
+            'user_id' => ['required', 'exists:users,uuid'],
         ];
     }
 }

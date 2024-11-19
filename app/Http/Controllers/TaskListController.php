@@ -11,6 +11,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TaskListRequest;
 use App\Http\Resources\TaskListResource;
 use App\Models\TaskList;
+use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskListController extends Controller
@@ -21,14 +22,29 @@ class TaskListController extends Controller
     {
         $this->authorize('viewAny', TaskList::class);
 
-        return TaskListResource::collection(TaskList::all());
+        $query = TaskList::query();
+
+        if (request()->query('shared')) {
+            $query->whereHas('sharedWith', function ($query) {
+                $query->where('id', auth()->id());
+            });
+        }
+
+        return TaskListResource::collection($query->paginate(10));
     }
 
     public function store(TaskListRequest $request)
     {
         $this->authorize('create', TaskList::class);
 
-        return new TaskListResource(TaskList::create($request->validated()));
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task list created successfully',
+            'data' => new TaskListResource(TaskList::create([
+                'title' => $request->validated('title'),
+                'user_id' => auth()->id()
+            ]))
+        ]);
     }
 
     public function show(TaskList $taskList)
@@ -44,7 +60,11 @@ class TaskListController extends Controller
 
         $taskList->update($request->validated());
 
-        return new TaskListResource($taskList);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task list updated successfully',
+            'data' => new TaskListResource($taskList)
+        ]);
     }
 
     public function destroy(TaskList $taskList)
@@ -53,6 +73,14 @@ class TaskListController extends Controller
 
         $taskList->delete();
 
-        return response()->json();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task list deleted successfully'
+        ]);
+    }
+
+    public function checkUsername($username)
+    {
+        return User::where('username', $username)->exists();
     }
 }

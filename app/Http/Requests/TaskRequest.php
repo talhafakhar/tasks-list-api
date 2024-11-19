@@ -8,21 +8,17 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class TaskRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'task_list_id' => ['required', 'exists:task_lists'],
-            'description' => ['required'],
-            'status' => ['required'],//
+            'description' => ['required', 'string', 'max:2000'],
+            'status' => [new Enum(TaskStatus::class)],
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true;
     }
 }

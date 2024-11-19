@@ -9,7 +9,9 @@
 namespace App\Traits;
 
 
+use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait HasUuid
 {
@@ -18,6 +20,19 @@ trait HasUuid
         static::creating(function ($model) {
             $model->uuid = Uuid::uuid4()->toString();
         });
+    }
+
+    /**
+     * Override the default route binding to validate UUIDs.
+     * To avoid PostgresSQL UUID injection, we need to validate the UUID before querying the database.
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        if (!Uuid::isValid($value)) {
+            throw new NotFoundHttpException();
+        }
+//        dd(parent::resolveRouteBinding($value, $field));
+        return parent::resolveRouteBinding($value, $field);
     }
 
     public static function find($id): null|self
@@ -31,7 +46,7 @@ trait HasUuid
 
     protected static function isUuid($id): bool
     {
-        if (is_string($id)) {
+        if (Uuid::isValid($id)) {
             return true;
         }
         return false;
@@ -39,9 +54,18 @@ trait HasUuid
 
     public static function findByUuid(string $uuid): self
     {
-        return static::where('uuid', $uuid)
-            ->whereNull('deleted_at')
-            ->firstOrFail();
+        if (!static::isUuid($uuid)) {
+            abort(404, 'Not Found');
+        }
+
+
+        $query = static::where('uuid', $uuid);
+
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses(static::class))) {
+            $query->whereNull('deleted_at');
+        }
+
+        return $query->firstOrFail();
     }
 
     public function getRouteKeyName(): string

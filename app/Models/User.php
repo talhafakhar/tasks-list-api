@@ -41,11 +41,6 @@ class User extends Authenticatable
         return $this->hasMany(TaskList::class);
     }
 
-    public function listShares(): HasMany
-    {
-        return $this->hasMany(ListShare::class);
-    }
-
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token, $this->email));

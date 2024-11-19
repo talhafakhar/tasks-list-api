@@ -9,50 +9,63 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ListShareRequest;
+use App\Http\Requests\ListUnShareRequest;
+use App\Http\Requests\UpdateShareRequest;
 use App\Http\Resources\ListShareResource;
-use App\Models\ListShare;
+use App\Http\Resources\TaskListResource;
+use App\Models\TaskList;
+use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ListShareController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function share(ListShareRequest $request, TaskList $taskList)
     {
-        $this->authorize('viewAny', ListShare::class);
+        $this->authorize('share', $taskList);
 
-        return ListShareResource::collection(ListShare::all());
+        foreach ($request->validated('users') as $userId) {
+
+            $taskList->sharedWith()->attach(User::findByUuid($userId)->id, ['permission_type' => $request->validated('permission')]);
+        }
+
+        return response()->json([
+            'message' => 'Task list shared successfully',
+            'data' => new TaskListResource($taskList->load('sharedWith'))
+        ]);
     }
 
-    public function store(ListShareRequest $request)
+    public function unShare(ListUnShareRequest $request, TaskList $taskList)
     {
-        $this->authorize('create', ListShare::class);
+        $this->authorize('unShare', $taskList);
 
-        return new ListShareResource(ListShare::create($request->validated()));
+        foreach ($request->validated('users') as $userId) {
+            $taskList->sharedWith()->detach(User::findByUuid($userId)->id);
+        }
+
+        return response()->json([
+            'message' => 'Task list unshared successfully',
+            'data' => new TaskListResource($taskList->load('sharedWith'))
+        ]);
     }
 
-    public function show(ListShare $listShare)
+    public function shared(TaskList $taskList)
     {
-        $this->authorize('view', $listShare);
+        $this->authorize('shared', $taskList);
 
-        return new ListShareResource($listShare);
+        return ListShareResource::collection($taskList->sharedWith);
     }
 
-    public function update(ListShareRequest $request, ListShare $listShare)
+    public function update(UpdateShareRequest $request, TaskList $taskList)
     {
-        $this->authorize('update', $listShare);
+        $this->authorize('updatePermission', $taskList);
 
-        $listShare->update($request->validated());
+        $taskList->sharedWith()->updateExistingPivot(User::findByUuid($request->validated('user_id'))->id, ['permission_type' => $request->validated('permission')]);
 
-        return new ListShareResource($listShare);
-    }
-
-    public function destroy(ListShare $listShare)
-    {
-        $this->authorize('delete', $listShare);
-
-        $listShare->delete();
-
-        return response()->json();
+        return response()->json([
+            'message' => 'Permission updated successfully',
+            'data' => new TaskListResource($taskList->load('sharedWith'))
+        ]);
     }
 }
