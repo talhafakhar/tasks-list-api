@@ -16,7 +16,7 @@ return new class extends Migration {
         Schema::create('task_lists', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->timestamps();
         });

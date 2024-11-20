@@ -54,7 +54,7 @@ class ListShareController extends Controller
     {
         $this->authorize('shared', $taskList);
 
-        return ListShareResource::collection($taskList->sharedWith);
+        return ListShareResource::collection($taskList->sharedWith->sortByDesc('created_at'));
     }
 
     public function update(UpdateShareRequest $request, TaskList $taskList)

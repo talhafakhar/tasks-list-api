@@ -32,30 +32,33 @@ class TaskPolicy
 
     public function create(User $user, TaskList $taskList): bool
     {
+        $pivot = $taskList->sharedWith->find($user->id)?->pivot;
         return $taskList->user_id === $user->id ||
             (
                 $taskList->sharedWith->contains($user) &&
-                $taskList->pivot->permission_type->is(ListSharePermission::EDIT)
+                $pivot->permission_type?->is(ListSharePermission::EDIT)
             );
     }
 
     public function update(User $user, Task $task): bool
     {
         $taskList = $task->taskList;
+        $pivot = $taskList->sharedWith->find($user->id)?->pivot;
         return $taskList->user_id === $user->id ||
             (
                 $taskList->sharedWith->contains($user) &&
-                $taskList->pivot->permission_type->is(ListSharePermission::EDIT)
+                $pivot->permission_type?->is(ListSharePermission::EDIT)
             );
     }
 
     public function delete(User $user, Task $task): bool
     {
         $taskList = $task->taskList;
+        $pivot = $taskList->sharedWith->find($user->id)?->pivot;
         return $taskList->user_id === $user->id ||
             (
                 $taskList->sharedWith->contains($user) &&
-                $taskList->pivot->permission_type->is(ListSharePermission::EDIT)
+                $pivot->permission_type?->is(ListSharePermission::EDIT)
             );
     }
 

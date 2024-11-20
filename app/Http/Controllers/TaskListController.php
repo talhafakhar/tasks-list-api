@@ -30,7 +30,7 @@ class TaskListController extends Controller
             });
         }
 
-        return TaskListResource::collection($query->paginate(10));
+        return TaskListResource::collection($query->latest('created_at')->get());
     }
 
     public function store(TaskListRequest $request)
@@ -81,6 +81,12 @@ class TaskListController extends Controller
 
     public function checkUsername($username)
     {
-        return User::where('username', $username)->exists();
+        $user = User::where('username', $username)
+            ->whereNotIn('id', [auth()->id()])
+            ->first();
+
+        return response()->json([
+            'id' => $user?->uuid ?? false
+        ]);
     }
 }

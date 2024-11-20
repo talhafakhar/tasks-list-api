@@ -25,6 +25,7 @@ class TaskListResource extends JsonResource
 
             'user' => new UserResource($this->whenLoaded('user')),
             'is_shared' => $this->sharedWith->isNotEmpty(),
+            'is_own' => $this->user_id === auth()->id(),
         ];
     }
 }

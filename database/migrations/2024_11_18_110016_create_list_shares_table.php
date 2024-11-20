@@ -16,9 +16,9 @@ return new class extends Migration {
         Schema::create('list_shares', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('task_list_id')->constrained('task_lists');
+            $table->foreignId('task_list_id')->constrained('task_lists')->onDelete('cascade');
             $table->string('permission_type');
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

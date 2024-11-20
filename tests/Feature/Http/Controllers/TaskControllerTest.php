@@ -43,7 +43,6 @@ class TaskControllerTest extends TestCase
                     'description',
                     'created_at',
                     'updated_at',
-                    'task_list_id',
                 ],
             ],
         ]);
@@ -73,7 +72,6 @@ class TaskControllerTest extends TestCase
                 'description',
                 'created_at',
                 'updated_at',
-                'task_list_id',
             ],
         ]);
 
@@ -125,7 +123,7 @@ class TaskControllerTest extends TestCase
                 'description',
                 'created_at',
                 'updated_at',
-                'task_list_id',
+                'task_list',
             ],
         ]);
 
@@ -166,7 +164,7 @@ class TaskControllerTest extends TestCase
                 'description',
                 'created_at',
                 'updated_at',
-                'task_list_id',
+                'task_list',
             ],
         ]);
 

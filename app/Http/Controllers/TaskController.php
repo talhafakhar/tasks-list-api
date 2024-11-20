@@ -21,7 +21,7 @@ class TaskController extends Controller
 
     public function index(TaskList $taskList)
     {
-        return TaskResource::collection($taskList->tasks()->paginate(10));
+        return TaskResource::collection($taskList->tasks()->latest('created_at')->get());
     }
 
     public function store(TaskRequest $request, TaskList $taskList)
