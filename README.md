@@ -31,17 +31,3 @@ This is a simple API to manage tasks. It was developed using Laravel 11 and Post
 ## API Endpoints
 
 Postman collection: [Listify API](https://documenter.getpostman.com/view/28454077/2sAYBRFtpp)
-
-## Frontend Application
-
-The frontend application is available at [Listify Frontend](https://github.com/talhafakhar/task-list-react)
-
-## Running Pre-built Docker Image
-
-Just use the docker compose file
-`docker-compose-prebuilt-images.yml`
-
-Clone the repo or Just copy that file and run the following command
-`docker-compose -f docker-compose-prebuilt-images.yml up -d`
-
-Update environment variables if needed. It will work even without any changes.

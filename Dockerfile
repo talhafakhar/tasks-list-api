@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libssl-dev \
     libcurl4-openssl-dev \
+    nodejs \
+    npm \
     pkg-config && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -35,14 +37,21 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     pecl install redis && \
     docker-php-ext-enable redis
 
+# Add Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy virtual host configuration file
 COPY apache/vhosts.conf /etc/apache2/sites-available/000-default.conf
+COPY apache/ports.conf /etc/apache2/ports.conf
 
 # Enable Apache mod_rewrite and vhost_alias
-RUN a2enmod rewrite vhost_alias
+RUN a2enmod rewrite
+RUN a2enmod vhost_alias
 
 # Copy existing application directory contents (before dependencies)
 COPY . /var/www/html
@@ -56,9 +65,17 @@ RUN composer install --no-dev --optimize-autoloader
 # Copy environment file
 COPY .env.example .env
 
-# Expose port 80
-EXPOSE 80
+# Expose port 80 and 8080 and start Apache
+EXPOSE 80 8080
 
+# Add build arguments
+ARG REACT_APP_API_URL
+
+WORKDIR /var/www/html/resources/frontend
+RUN npm install
+RUN REACT_APP_API_URL=$REACT_APP_API_URL npm run build
+
+WORKDIR /var/www/html
 # Copy the entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

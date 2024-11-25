@@ -1,11 +1,16 @@
 services:
     app:
-        build: .
-        container_name: laravel_app
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                REACT_APP_API_URL: http://localhost:8080/api/
+        container_name: listify_app
         volumes:
             - storage_volume:/var/www/html/storage
         ports:
-            - "8080:80"
+            - "8080:8080"
+            - "80:80"
         depends_on:
             postgres:
                 condition: service_healthy
@@ -13,6 +18,8 @@ services:
                 condition: service_healthy
         environment:
             APP_NAME: "Listify"
+            APP_URL: http://localhost:8080
+            FRONTEND_URL: http://localhost
             APP_DEBUG: false
             DB_CONNECTION: pgsql
             DB_HOST: postgres
@@ -37,7 +44,7 @@ services:
 
     postgres:
         image: postgres:13
-        container_name: laravel_postgres
+        container_name: listify_postgres
         volumes:
             - postgres_data:/var/lib/postgresql/data
         environment:
@@ -52,7 +59,7 @@ services:
 
     redis:
         image: redis:6-alpine
-        container_name: laravel_redis
+        container_name: listify_redis
         healthcheck:
             test: [ "CMD", "redis-cli", "ping" ]
             interval: 10s
@@ -61,22 +68,9 @@ services:
 
     mailhog:
         image: mailhog/mailhog
-        container_name: laravel_mailhog
+        container_name: listify_mailhog
         ports:
             - "8026:8025"
-
-#    frontend:
-#        build:
-#            context: .
-#            dockerfile: Dockerfile.frontend
-#            args:
-#                REPO_URL: https://github.com/talhafakhar/task-list-react.git
-#        ports:
-#            - "3000:3000"
-#        environment:
-#            REACT_APP_API_URL: http://localhost/api/
-#        depends_on:
-#            -   app
 
 volumes:
     postgres_data:
